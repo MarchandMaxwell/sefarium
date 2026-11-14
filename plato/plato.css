@@ -244,6 +244,27 @@ cite.ref {
   line-height: 1.5;
   color: var(--ink);
 }
+.story-box {
+  margin: 1.1rem 0 .4rem;
+  font-family: var(--font-ui);
+  font-size: .98rem;
+  line-height: 1.55;
+}
+.story-box summary {
+  cursor: pointer;
+  font-size: .72rem;
+  font-weight: 600;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.story-box p {
+  margin: .55rem 0 0;
+  max-width: 40rem;
+  color: #222;
+  font-family: var(--font-text);
+  font-size: 1.05rem;
+}
 
 .pager {
   display: flex;
