@@ -111,8 +111,49 @@ TETRALOGIES = [
      ["minos", "laws", "epinomis", "letters"]),
 ]
 
-# Dramatic order. Each item is (slug, when, summary).
-# "when" is the date and setting, kept separate from the summary.
+# Shown on the library rows and in the "Love in this dialogue" box.
+# Wording is fixed; the date line stays separate.
+LOVE = {
+    "parmenides": "A very young Socrates presents his theory of Forms to the old philosopher Parmenides, who takes it apart and then runs him through a hard logical workout. Loving the truth means letting even your dearest ideas be tested.",
+    "protagoras": "Socrates is fresh from flirting with Alcibiades when a friend drags him off to hear the famous sophist Protagoras. They argue over whether virtue can be taught, and by the end each has swapped positions. Socrates tells the friend he forgot Alcibiades entirely, because wisdom is the greater beauty.",
+    "alcibiades-1": "Socrates finally speaks to the proud young Alcibiades, the lover who stayed after all the others left. He shows him he isn't ready to lead Athens because he doesn't know himself. To love someone is to love their soul and help it see itself.",
+    "alcibiades-2": "Socrates meets Alcibiades on his way to pray and warns him that people often ask the gods for things that ruin them. Love without wisdom can wish harm on what it loves.",
+    "charmides": "Back from battle, Socrates meets the stunningly beautiful Charmides and catches a glimpse inside his cloak, which almost unsettles him. He steadies himself, and they try and fail to define self-control. Self-mastery is what lets love see instead of grab.",
+    "laches": "Two fathers ask two generals, Laches and Nicias, whether their sons should learn armoured fighting. Socrates draws them into asking what courage is. To love something enough to stand firm for it, you must know what is truly worth fearing.",
+    "lysis": "At a wrestling school, Socrates helps the shy Hippothales, who is in love with the boy Lysis. Instead of flattering Lysis, Socrates talks with him and his friend about what makes someone a friend, and they can't settle it. Every love points past the beloved toward a \"first beloved\", the good itself.",
+    "euthydemus": "Socrates recounts two brothers who win every argument with ridiculous word traps while a young man watches. Cleverness that cares about winning loves no one; real teaching cares whether the other person becomes wise.",
+    "hippias-major": "The vain sophist Hippias tries to define \"the beautiful\" and keeps failing under Socrates' questions. If you can't say what beauty is, love doesn't know what it's chasing.",
+    "hippias-minor": "Socrates argues with Hippias over whether honest Achilles or wily Odysseus is the better man, and reaches a troubling paradox about doing wrong on purpose. The heart has to be ordered toward the good, not just skilled.",
+    "ion": "A prize-winning reciter of Homer admits he is moved by poetry but can't explain it. Socrates says he is possessed, like a link in a magnetic chain from the Muse. Passion is a divine gift, but it isn't knowledge.",
+    "gorgias": "At a dinner, Socrates faces the orator Gorgias, then the hot-headed Polus, then the ruthless Callicles, who mocks him for preferring philosophy to power. Socrates answers that flattery feeds what people want, real care gives them what's good, and it is better to suffer wrong than to do it.",
+    "republic": "At a festival night in the port of Piraeus, Socrates is pressed by the angry Thrasymachus and then by Plato's brothers to prove justice is worth having. He builds a perfect city in words to see justice large. Desire, educated by reason, learns to love the Good, which lights up everything worth loving like the sun. The tyrant is love gone wrong: endless appetite and no friends.",
+    "symposium": "At a drinking party for the poet Agathon, the guests each praise Love. Aristophanes says lovers are split halves seeking wholeness. Socrates tells what the priestess Diotima taught him: love is longing to possess the beautiful forever, rising from one body to all beauty, then to souls, laws and knowledge, and finally to Beauty itself. Then a drunk Alcibiades bursts in and confesses that Socrates refused his seduction. This is the centre of Plato on love.",
+    "phaedrus": "Socrates and the young Phaedrus walk barefoot along a stream outside the city and lie down under a plane tree. Phaedrus reads a speech saying it's better to give yourself to someone who doesn't love you. Socrates answers that love is a divine madness: the soul is a charioteer with a noble horse and an unruly one, and the sight of the beloved regrows the soul's wings. Two lovers who rein in desire together rise toward the divine.",
+    "menexenus": "Socrates recites a funeral speech he says he learned from Aspasia, praising the war dead. Love of country can be noble or mere flattery.",
+    "cratylus": "Two friends argue whether names are natural or just convention, and Socrates offers playful etymologies, including for \"eros\". Words point to the truth, but love has to reach the thing itself.",
+    "meno": "The young Meno asks whether virtue can be taught. Socrates leads a slave boy to work out a geometry proof and argues that learning is recollection. Then Anytus, who will help prosecute him, warns him darkly. The love of learning is the soul remembering what it already longs for.",
+    "theaetetus": "Shortly before his trial, Socrates meets a gifted young mathematician and calls himself a midwife of souls. They test three definitions of knowledge and none survives. He loves the young by helping them birth their own thoughts and checking whether they're true.",
+    "euthyphro": "Outside the court, Socrates meets Euthyphro, who is prosecuting his own father, and asks him what piety is. They can't decide whether the gods love what is holy because it's holy, or whether it's holy because they love it. Love has to aim at what is good in itself.",
+    "sophist": "A visitor from Elea, a pupil of Parmenides, tracks down the sophist, the imitator of wisdom, and in doing so works out how falsehood is possible. To love wisdom you have to tell it apart from its counterfeit.",
+    "statesman": "The same visitor defines the true ruler as a weaver who binds bold and gentle citizens together. Love and friendship are the threads that make a city whole.",
+    "apology": "Socrates defends himself before 500 Athenian jurors. He says the oracle at Delphi sent him to question everyone, and he won't stop, even to save himself. He is condemned to death and tells them no harm can come to a good man. He loves the truth and his city more than his life.",
+    "crito": "At dawn in prison, his old friend Crito says the escape is arranged and begs him to go. Socrates imagines the Laws of Athens speaking to him like parents, and he stays. Loyalty and love mean keeping faith even when it costs everything.",
+    "phaedo": "On his last day, his friends gather. Socrates argues that the soul is immortal and that philosophy is a lifelong preparation for death. At sunset he drinks the hemlock calmly while his friends weep. The lover of wisdom goes home to what he loved all along.",
+    "timaeus": "The day after the Republic conversation, the astronomer Timaeus describes how a good craftsman made the cosmos to be as much like himself as possible. Creation itself is an act of generous love.",
+    "critias": "Critias begins the tale of ancient Athens and Atlantis, a proud empire that grew greedy and was punished by the gods. It breaks off unfinished. A people whose love turns to greed falls.",
+    "philebus": "Socrates and young Protarchus weigh pleasure against wisdom and decide the good life is a measured mixture of both. Desire is good when reason sets its measure.",
+    "laws": "Three old men, from Athens, Crete and Sparta, walk to a shrine of Zeus and draft laws for a new city. The lawgiver loves the citizens like a parent and leads mainly by persuasion and education, so that marriage, festivals and friendship bind the city together.",
+    "epinomis": "The same three men discuss the wisdom that crowns the laws, namely number and the study of the heavens. Wonder at the ordered sky is love turned toward the divine.",
+    "minos": "Socrates asks a companion what law is and argues that true law aims at the truth. Lawful order is a form of care.",
+    "hipparchus": "Socrates presses a friend on whether love of gain is shameful and concludes that everyone loves the good, though few know what it is.",
+    "lovers": "In a school, two rivals compete for a boy's attention, one an athlete and one well read. Socrates asks whether loving wisdom means knowing a lot. It means knowing how to make oneself and others better.",
+    "theages": "A farmer brings his son to Socrates to learn wisdom. Socrates explains that his inner divine sign decides whom he can help. Being near a good teacher helps only when the student truly loves the good.",
+    "cleitophon": "Cleitophon tells Socrates that he inspires people to virtue but never shows them how to reach it. Love of the good needs a path, not just a spark.",
+    "letters": "Plato, now old, writes about his failed attempts to guide the rulers of Syracuse and his grief over his murdered friend Dion. Truth is kindled in the soul like a spark from long companionship, not from writing.",
+}
+
+# Dramatic order. Each item is (slug, when, unused).
+# "when" is the date and setting. The listing text is LOVE.
 PHASES = [
     ("Youth", "Before the Peloponnesian War", [
         ("parmenides",
@@ -239,14 +280,25 @@ def esc(text: str) -> str:
     return html.escape(text, quote=True)
 
 
+def love_box(slug: str) -> str:
+    """Box placed above the Greek on a dialogue page. No link onward."""
+    return (
+        '<aside class="love-box">'
+        '<h2>Love in this dialogue</h2>'
+        f'<p>{esc(LOVE[slug])}</p>'
+        '</aside>'
+    )
+
+
 def _row(slug: str, when: str, summary: str, href: str, greeks: dict[str, str]) -> str:
     greek = greeks.get(slug, GREEK[slug])
+    shown = LOVE[slug]
     return (
         f'<a class="work" href="{esc(href)}">'
         f'<span class="names"><span class="en">{esc(ENGLISH[slug])}</span>'
         f'<span class="gk" lang="grc">{esc(greek)}</span></span>'
         f'<span class="when">{esc(when)}</span>'
-        f'<span class="desc">{esc(summary)}</span>'
+        f'<span class="desc">{esc(shown)}</span>'
         f'</a>'
     )
 
@@ -408,13 +460,11 @@ def write_catalog_pages(root: Path, greeks: dict[str, str] | None = None) -> Non
     extra = [slug for slug in _by_slug() if slug not in GREEK]
     if missing or extra:
         raise SystemExit(f"catalogue mismatch missing={missing} extra={extra}")
-    text = "\n".join(
-        when + " " + summary
-        for _t, _b, items in PHASES
-        for _slug, when, summary in items
-    )
+    text = "\n".join(LOVE.values())
     if "\u2014" in text or "\u2013" in text:
-        raise SystemExit("catalogue prose contains an em dash or en dash")
+        raise SystemExit("love summaries contain an em dash or en dash")
+    if set(LOVE) != set(GREEK):
+        raise SystemExit(f"love keys differ from works: {set(LOVE) ^ set(GREEK)}")
     (root / "plato" / "index.html").write_text(catalog_document("plato", greeks), encoding="utf-8")
     (root / "texts" / "plato.html").write_text(catalog_document("texts", greeks), encoding="utf-8")
 

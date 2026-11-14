@@ -22,7 +22,7 @@ import urllib.request
 from pathlib import Path
 from xml.etree import ElementTree as ET
 
-from plato_catalogue import write_catalog_pages
+from plato_catalogue import love_box, write_catalog_pages
 
 SOURCE_COMMIT = "dacb04909e43dc47738828d33cc3d2b0635bc54c"
 SOURCE_REPO = "PerseusDL/canonical-greekLit"
@@ -659,6 +659,7 @@ function goSteph(form) {{
   {persons}
   {note}
   {tools}
+  {love_box(meta["slug"])}
   <article class="reading" lang="grc">
     {''.join(renderer.blocks)}
   </article>
