@@ -10,6 +10,8 @@ from __future__ import annotations
 import html
 from pathlib import Path
 
+from plato_stories import STORY
+
 # slug -> Greek title as printed from the Burnet texts.
 GREEK = {
     "euthyphro": "Εὐθύφρων",
@@ -290,15 +292,25 @@ def love_box(slug: str) -> str:
     )
 
 
+def story_box(slug: str) -> str:
+    """Collapsed retelling, above the love box and the Greek."""
+    return (
+        '<details class="story-box">'
+        '<summary>The story</summary>'
+        f'<p>{esc(STORY[slug])}</p>'
+        '</details>'
+    )
+
+
 def _row(slug: str, when: str, summary: str, href: str, greeks: dict[str, str]) -> str:
     greek = greeks.get(slug, GREEK[slug])
-    shown = LOVE[slug]
     return (
         f'<a class="work" href="{esc(href)}">'
         f'<span class="names"><span class="en">{esc(ENGLISH[slug])}</span>'
         f'<span class="gk" lang="grc">{esc(greek)}</span></span>'
         f'<span class="when">{esc(when)}</span>'
-        f'<span class="desc">{esc(shown)}</span>'
+        f'<span class="desc">{esc(STORY[slug])}</span>'
+        f'<span class="love-line"><span class="lbl">Love:</span> {esc(LOVE[slug])}</span>'
         f'</a>'
     )
 
@@ -460,11 +472,21 @@ def write_catalog_pages(root: Path, greeks: dict[str, str] | None = None) -> Non
     extra = [slug for slug in _by_slug() if slug not in GREEK]
     if missing or extra:
         raise SystemExit(f"catalogue mismatch missing={missing} extra={extra}")
-    text = "\n".join(LOVE.values())
-    if "\u2014" in text or "\u2013" in text:
-        raise SystemExit("love summaries contain an em dash or en dash")
-    if set(LOVE) != set(GREEK):
-        raise SystemExit(f"love keys differ from works: {set(LOVE) ^ set(GREEK)}")
+    if set(LOVE) != set(GREEK) or set(STORY) != set(GREEK):
+        raise SystemExit(
+            f"story or love keys differ from works: "
+            f"{(set(LOVE) | set(STORY)) ^ set(GREEK)}"
+        )
+    counts = {slug: len(text.split()) for slug, text in STORY.items()}
+    over = {slug: n for slug, n in counts.items() if n > 300}
+    if over:
+        raise SystemExit(f"story over 300 words: {over}")
+    prose = "\n".join(list(STORY.values()) + list(LOVE.values()))
+    if "\u2014" in prose or "\u2013" in prose:
+        raise SystemExit("catalogue prose contains an em dash or en dash")
+    print("story word counts:")
+    for slug, n in sorted(counts.items(), key=lambda item: -item[1]):
+        print(f"  {n:3}  {slug}")
     (root / "plato" / "index.html").write_text(catalog_document("plato", greeks), encoding="utf-8")
     (root / "texts" / "plato.html").write_text(catalog_document("texts", greeks), encoding="utf-8")
 
