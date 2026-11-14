@@ -390,12 +390,12 @@ def catalog_document(where: str, greeks: dict[str, str] | None = None) -> str:
         css = "library.css"
         icon = "../"
         brand = "../index.html"
-        texts = "index.html"
-        plato = "../plato/index.html"
-        topics = "../index.html#topics"
-        donate = "../index.html#donate"
-        plato_current = ""
-        home_reader = "../index.html#p-103"
+        texts = "../index.html"
+        plato = "plato.html"
+        topics = "../plato/alcibiades-1-annotated.html#topics"
+        donate = "../plato/alcibiades-1-annotated.html#donate"
+        plato_current = ' aria-current="page"'
+        home_reader = "../plato/alcibiades-1-annotated.html#p-103"
     else:
         raise ValueError(where)
 
@@ -466,6 +466,25 @@ def catalog_document(where: str, greeks: dict[str, str] | None = None) -> str:
 """
 
 
+def redirect_page(target: str, title: str) -> str:
+    """A small page that forwards an old address, keeping any #fragment."""
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>{esc(title)}</title>
+<meta name="robots" content="noindex">
+<link rel="canonical" href="{target}">
+<meta http-equiv="refresh" content="0; url={target}">
+<script>location.replace("{target}" + location.hash);</script>
+</head>
+<body>
+<p>This page has moved to <a href="{target}">{target}</a>.</p>
+</body>
+</html>
+"""
+
+
 def write_catalog_pages(root: Path, greeks: dict[str, str] | None = None) -> None:
     greeks = {**GREEK, **(greeks or {})}
     missing = [slug for slug in GREEK if slug not in _by_slug()]
@@ -487,13 +506,14 @@ def write_catalog_pages(root: Path, greeks: dict[str, str] | None = None) -> Non
     print("story word counts:")
     for slug, n in sorted(counts.items(), key=lambda item: -item[1]):
         print(f"  {n:3}  {slug}")
-    (root / "plato" / "index.html").write_text(catalog_document("plato", greeks), encoding="utf-8")
+    # One catalogue page; the old address forwards to it.
+    (root / "plato" / "index.html").write_text(redirect_page("../texts/plato.html", "Plato · Sefarium"), encoding="utf-8")
     (root / "texts" / "plato.html").write_text(catalog_document("texts", greeks), encoding="utf-8")
 
 
 def main() -> None:
     write_catalog_pages(Path(__file__).resolve().parents[1])
-    print("wrote plato/index.html and texts/plato.html")
+    print("wrote texts/plato.html (plato/index.html forwards to it)")
 
 
 if __name__ == "__main__":

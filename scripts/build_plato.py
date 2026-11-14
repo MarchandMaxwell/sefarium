@@ -169,7 +169,9 @@ def parse_cts(path: Path) -> dict:
     if not grc or not burnet:
         raise SystemExit(f"missing Greek label or Burnet description in {path}")
     vol = re.search(r"Tomus\s+([IVXLC]+)", burnet)
-    year = re.search(r"\b(1[89]\d{2}|20\d{2})\b", burnet)
+    # The CTS record names Burnet with his life dates ("1863-1928"); the
+    # publication year is the one after the publisher.
+    year = re.search(r"Press,?\s*(1[89]\d{2}|20\d{2})", burnet)
     edition = "John Burnet, Platonis Opera (Oxford: Clarendon Press"
     edition += f", {year.group(1)}" if year else ""
     edition += ")"
@@ -532,10 +534,10 @@ def render_work(xml_path: Path) -> tuple[Renderer, int]:
 
 def page_shell(title: str, body: str, current: str) -> str:
     nav = [
-        ("../texts/index.html", "texts", "Texts"),
-        ("index.html", "plato", "Plato"),
-        ("../index.html#topics", "topics", "Topics"),
-        ("../index.html#donate", "donate", "Donate"),
+        ("../index.html", "texts", "Texts"),
+        ("../texts/plato.html", "plato", "Plato"),
+        ("alcibiades-1-annotated.html#topics", "topics", "Topics"),
+        ("alcibiades-1-annotated.html#donate", "donate", "Donate"),
     ]
     items = []
     for href, key, label in nav:
@@ -545,12 +547,12 @@ def page_shell(title: str, body: str, current: str) -> str:
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{esc(title)}</title>
 <link rel="icon" href="../favicon.svg" type="image/svg+xml">
 <link rel="icon" href="../favicon.ico" sizes="any">
 <link rel="icon" href="../favicon-32.png" type="image/png" sizes="32x32">
 <link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{esc(title)}</title>
 <link rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -582,8 +584,26 @@ def credits_block(urn: str, filename: str, edition: str) -> str:
     return f"""<footer class="credits">
   <p>Greek text: {esc(edition)}. Digital text from the <a href="https://www.perseus.tufts.edu/">Perseus Digital Library</a>, Tufts University (<a href="{esc(github)}">{esc(urn)}</a>).</p>
   <p>Licence: <a href="https://creativecommons.org/licenses/by-sa/4.0/">Creative Commons Attribution-ShareAlike 4.0</a>. Reuse must credit the Perseus Digital Library, Tufts University, and link to <a href="https://www.perseus.tufts.edu/">perseus.tufts.edu</a>. <a href="{esc(scaife)}">Open this text in the Scaife Viewer</a>.</p>
-  <p><a href="index.html">All dialogues</a> · <a href="../index.html">Sefarium</a></p>
+  <p><a href="../texts/plato.html">All dialogues</a> · <a href="../index.html">Sefarium</a></p>
 </footer>"""
+
+
+# Words missing from the pinned Perseus TEI, checked against the Perseus Hopper
+# text of the same Burnet edition. Each entry: slug -> [(text before, inserted)].
+# Inserted text goes immediately after the "before" text, which must occur once.
+RESTORED = {
+    # 104a: the line before the 104b milestone is dropped in perseus-grc2.
+    "alcibiades-1": [("ἐν τῇ σεαυτοῦ ", "πόλει, οὔσῃ μεγίστῃ τῶν Ἑλληνίδων, καὶ ")],
+}
+
+
+def restore_missing(slug: str, page: str) -> str:
+    for before, inserted in RESTORED.get(slug, []):
+        if page.count(before) != 1:
+            raise SystemExit(f"{slug}: cannot place restored text after {before!r}")
+        if inserted not in page:
+            page = page.replace(before, before + inserted, 1)
+    return page
 
 
 def work_page(meta: dict, renderer: Renderer, prev_m: dict | None, next_m: dict | None) -> str:
@@ -604,7 +624,7 @@ def work_page(meta: dict, renderer: Renderer, prev_m: dict | None, next_m: dict 
     elif meta["num"] == "013":
         note = (
             '<p class="note">An annotated edition of Alcibiades I, with a new English translation, '
-            'is the <a href="../index.html">Sefarium reading of this dialogue</a>.</p>'
+            'is the <a href="alcibiades-1-annotated.html">Sefarium reading of this dialogue</a>.</p>'
         )
     toc = ""
     if renderer.toc:
@@ -672,7 +692,7 @@ function goSteph(form) {{
 
 def check(works: list[dict], out: Path) -> None:
     errors: list[str] = []
-    index = (out / "index.html").read_text(encoding="utf-8")
+    index = (out.parent / "texts" / "plato.html").read_text(encoding="utf-8")
     if index.count("<li><a href=") < 36:
         # site nav also has links; count work rows instead
         pass
@@ -682,7 +702,7 @@ def check(works: list[dict], out: Path) -> None:
         errors.append("index missing licence link")
     for meta in works:
         href = f'{meta["slug"]}.html'
-        if f'href="{href}"' not in index:
+        if f'href="../plato/{href}"' not in index:
             errors.append(f"index does not link to {href}")
         page = (out / href).read_text(encoding="utf-8")
         for needle in (
@@ -695,6 +715,8 @@ def check(works: list[dict], out: Path) -> None:
         ):
             if needle not in page:
                 errors.append(f'{href} missing {needle!r}')
+        if "Clarendon Press, 1863" in page:
+            errors.append(f"{href} prints Burnet's birth year as the publication year")
         if "\ufffd" in page or "Ã" in page or "Î" in page:
             errors.append(f"{href} has encoding damage")
         steph = len(re.findall(r'class="steph"', page))
@@ -708,6 +730,11 @@ def check(works: list[dict], out: Path) -> None:
         for phrase in SPOT.get(meta["slug"], []):
             if phrase not in page:
                 errors.append(f'{href} missing spot phrase {phrase!r}')
+    for slug, fixes in RESTORED.items():
+        page = (out / f"{slug}.html").read_text(encoding="utf-8")
+        for _before, inserted in fixes:
+            if inserted not in page:
+                errors.append(f"{slug}.html is missing restored text {inserted!r}")
     apology = (out / "apology.html").read_text(encoding="utf-8")
     if 'id="s17a"' not in apology or 'id="s42a"' not in apology:
         errors.append("apology missing 17a or 42a")
@@ -793,7 +820,7 @@ def build(cache: Path, out: Path) -> None:
     for index, meta in enumerate(built):
         prev_m = built[index - 1] if index else None
         next_m = built[index + 1] if index + 1 < len(built) else None
-        page = work_page(meta, meta.pop("_renderer"), prev_m, next_m)
+        page = restore_missing(meta["slug"], work_page(meta, meta.pop("_renderer"), prev_m, next_m))
         (out / f'{meta["slug"]}.html').write_text(page, encoding="utf-8")
     greeks = {meta["slug"]: meta["greek"] for meta in built}
     write_catalog_pages(out.parent, greeks)
