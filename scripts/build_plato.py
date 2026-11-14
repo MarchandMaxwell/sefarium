@@ -22,6 +22,8 @@ import urllib.request
 from pathlib import Path
 from xml.etree import ElementTree as ET
 
+from plato_catalogue import write_catalog_pages
+
 SOURCE_COMMIT = "dacb04909e43dc47738828d33cc3d2b0635bc54c"
 SOURCE_REPO = "PerseusDL/canonical-greekLit"
 RAW = f"https://raw.githubusercontent.com/{SOURCE_REPO}/{SOURCE_COMMIT}/data/tlg0059"
@@ -666,58 +668,6 @@ function goSteph(form) {{
     return page_shell(f"{greek} · {english} · Sefarium", body, "plato")
 
 
-def index_page(works: list[dict]) -> str:
-    groups = []
-    for index, (numeral, blurb) in enumerate(TETRALOGIES):
-        chunk = works[index * 4:(index + 1) * 4]
-        rows = []
-        for meta in chunk:
-            tag = ""
-            if meta["dubium"]:
-                tag = '<span class="tag" title="Traditionally classed as spurious or doubtful">dubium</span>'
-            rows.append(
-                f'<li><a href="{meta["slug"]}.html">'
-                f'<span class="gt" lang="grc">{esc(meta["greek"])}{tag}</span>'
-                f'<span class="et">{esc(meta["english"])}</span>'
-                f'<span class="meta">{esc(meta["span"])}</span>'
-                f"</a></li>"
-            )
-        groups.append(
-            f'<section class="tet" id="tet-{numeral}">'
-            f'<h2><span class="num">{numeral}</span> Tetralogy {numeral}</h2>'
-            f'<p class="blurb" lang="grc">{esc(blurb)}</p>'
-            f'<ol class="works">{"".join(rows)}</ol>'
-            f"</section>"
-        )
-    body = f"""<main class="wrap library" id="text">
-  <p class="kicker">Perseus · Burnet · Greek</p>
-  <h1 class="gk" lang="grc">Πλάτων</h1>
-  <p class="subtitle">The dialogues, in Greek</p>
-  <p class="lede">The thirty-six works of Plato in the <a href="https://www.perseus.tufts.edu/hopper/collection?collection=Perseus%3Acorpus%3Aperseus%2Cauthor%2CPlato">Perseus collection</a>, in John Burnet’s Oxford text, arranged in the nine Thrasyllan tetralogies. Each page is the Greek only, with Stephanus pages and sections, and with speaker names where the edition marks them.</p>
-  <p class="lede">Works tagged dubium are those the tradition has usually doubted: Alcibiades II, Hipparchus, the Lovers, Theages, Cleitophon, Minos, and Epinomis. The Letters are included; they are not all regarded as genuine.</p>
-  {''.join(groups)}
-  <section class="tet" id="signs">
-    <h2>Editorial signs</h2>
-    <dl class="signs">
-      <dt>[ ]</dt><dd>words Burnet marks for deletion</dd>
-      <dt>⟨ ⟩</dt><dd>words supplied by the editor</dd>
-      <dt>[***]</dt><dd>a lacuna in the source</dd>
-    </dl>
-  </section>
-  <section class="tet" id="credits">
-    <h2>Credits</h2>
-    <div class="credits">
-      <p>Greek text of John Burnet, editor, <cite>Platonis Opera</cite> (Oxford: Clarendon Press, 1900–1914). Digital text: the Perseus Digital Library, Tufts University, from the <a href="https://github.com/{SOURCE_REPO}/tree/{SOURCE_COMMIT}/data/tlg0059">canonical-greekLit</a> repository (commit {SOURCE_COMMIT[:7]}, CTS author tlg0059), Greek editions only.</p>
-      <p>Licence: <a href="https://creativecommons.org/licenses/by-sa/4.0/">Creative Commons Attribution-ShareAlike 4.0</a>. Reuse must credit the Perseus Digital Library, Tufts University, and link to <a href="https://www.perseus.tufts.edu/">https://www.perseus.tufts.edu/</a>. The same obligation is repeated on every text page.</p>
-      <p>Not in this library, because they are not in the Perseus hopper collection of Plato and not among the Burnet texts in canonical-greekLit: the <cite>Definitions</cite> (Ὅροι; First1KGreek tlg0059.tlg037, shown by the Scaife catalog) and the later spuria <cite>On Justice</cite>, <cite>On Virtue</cite>, <cite>Demodocus</cite>, <cite>Sisyphus</cite>, <cite>Eryxias</cite>, and <cite>Axiochus</cite>.</p>
-      <p><a href="../index.html">Sefarium home</a>, where Alcibiades I is read with a translation and commentary.</p>
-    </div>
-  </section>
-</main>"""
-    # The index lives in plato/, so the shell's ../ links are correct.
-    return page_shell("Plato · the dialogues · Sefarium", body, "plato")
-
-
 def check(works: list[dict], out: Path) -> None:
     errors: list[str] = []
     index = (out / "index.html").read_text(encoding="utf-8")
@@ -843,7 +793,8 @@ def build(cache: Path, out: Path) -> None:
         next_m = built[index + 1] if index + 1 < len(built) else None
         page = work_page(meta, meta.pop("_renderer"), prev_m, next_m)
         (out / f'{meta["slug"]}.html').write_text(page, encoding="utf-8")
-    (out / "index.html").write_text(index_page(built), encoding="utf-8")
+    greeks = {meta["slug"]: meta["greek"] for meta in built}
+    write_catalog_pages(out.parent, greeks)
     check(built, out)
 
 
