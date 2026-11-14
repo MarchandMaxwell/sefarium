@@ -530,7 +530,7 @@ def render_work(xml_path: Path) -> tuple[Renderer, int]:
 
 def page_shell(title: str, body: str, current: str) -> str:
     nav = [
-        ("../index.html#texts", "texts", "Texts"),
+        ("../texts/index.html", "texts", "Texts"),
         ("index.html", "plato", "Plato"),
         ("../index.html#topics", "topics", "Topics"),
         ("../index.html#donate", "donate", "Donate"),
@@ -545,6 +545,10 @@ def page_shell(title: str, body: str, current: str) -> str:
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{esc(title)}</title>
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="icon" href="../favicon.ico" sizes="any">
+<link rel="icon" href="../favicon-32.png" type="image/png" sizes="32x32">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
 <link rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -554,7 +558,7 @@ def page_shell(title: str, body: str, current: str) -> str:
 <body>
 <a class="skip" href="#text">Skip to text</a>
 <nav class="sitebar" aria-label="Site">
-  <a class="brand" href="../index.html">Sefarium</a>
+  <a class="brand" href="../index.html"><span class="mark" aria-hidden="true">Ψ</span>Sefarium</a>
   <ul>
     {''.join(items)}
   </ul>

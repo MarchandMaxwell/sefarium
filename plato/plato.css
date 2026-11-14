@@ -55,6 +55,14 @@ a:hover { text-decoration: none; }
   text-decoration: none;
   letter-spacing: .01em;
 }
+.sitebar .brand .mark {
+  font-family: var(--font-greek);
+  color: var(--accent);
+  font-weight: 400;
+  font-size: 1.22em;
+  margin-right: .22em;
+  line-height: 1;
+}
 .sitebar ul { display: flex; flex-wrap: wrap; gap: .35rem 1.6rem; list-style: none; margin: 0; padding: 0; }
 .sitebar ul a {
   color: var(--muted);
