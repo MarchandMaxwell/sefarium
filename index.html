@@ -160,7 +160,7 @@ body{display:block;min-height:100vh}
 }
 
 /* site bar and site pages */
-.sitebar{display:flex;align-items:center;gap:2rem;padding:.7rem 1.4rem;background:var(--bg);border-bottom:3px solid var(--accent);font-family:var(--font-ui)}
+.sitebar{display:flex;align-items:center;flex-wrap:wrap;gap:.4rem 2rem;padding:.7rem 1.4rem;background:var(--bg);border-bottom:3px solid var(--accent);font-family:var(--font-ui)}
 .sitebar .brand{font-family:var(--font-text);font-size:1.35rem;font-weight:500;color:var(--ink);text-decoration:none;letter-spacing:.01em}
 .sitebar ul{display:flex;gap:1.6rem;list-style:none;margin:0;padding:0}
 .sitebar ul a{color:var(--muted);text-decoration:none;font-size:.92rem;padding:.25rem 0;border-bottom:2px solid transparent}
@@ -227,6 +227,7 @@ html,body{background:#ffffff;color:#000000}
   <a class="brand" href="#texts" id="brand">Sefarium</a>
   <ul>
     <li><a href="#texts" data-view="texts">Texts</a></li>
+    <li><a href="plato/index.html">Plato</a></li>
     <li><a href="#topics" data-view="topics">Topics</a></li>
     <li><a href="#donate" data-view="donate">Donate</a></li>
   </ul>
@@ -574,6 +575,7 @@ html,body{background:#ffffff;color:#000000}
   const VIEWS = {
     texts: () => '<div class="pv"><h1>Texts</h1><p class="lede">'+esc(SITE.tagline)+'.</p>'
       + SITE.texts.map(t=>'<section class="card"><div class="cat">'+esc(t.author)+'</div><h2><a href="#p-'+page(SEG[0].steph)+'">'+esc(t.title)+'</a> <span class="gk">'+esc(t.greek)+'</span></h2><p>'+esc(t.blurb)+'</p><p class="meta">'+esc(t.range)+' · '+esc(t.status)+'</p><a class="btn" href="#p-'+page(SEG[0].steph)+'">Start reading</a></section>').join('')
+      + '<section class="card"><div class="cat">Plato · Greek</div><h2><a href="plato/index.html">The dialogues <span class="gk">οἱ διάλογοι</span></a></h2><p>Every work in the Perseus collection, in the Burnet Oxford text: the nine Thrasyllan tetralogies, with Stephanus numbers, including the doubtful dialogues and the Letters.</p><p class="meta">36 works · Greek only · CC BY-SA</p><a class="btn" href="plato/index.html">Open the library</a></section>'
       + '</div>',
     topics: () => '<div class="pv"><h1>Topics</h1><p class="lede">The main themes of <i>Alcibiades I</i>, with the passages where each one comes up.</p><div class="tgrid">'
       + SITE.topics.map(t=>'<section class="card topic"><h2>'+esc(t.title)+' <span class="gk">'+esc(t.greek)+'</span></h2><p>'+esc(t.text)+'</p><ul>'
