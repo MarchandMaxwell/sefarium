@@ -8,9 +8,9 @@
   --accent: #1e4d6b;
   --line: #e2e2df;
   --select: #edf3f8;
-  --font-greek: "Google Sans", "Helvetica Neue", Arial, sans-serif;
-  --font-text: "Google Sans", "Helvetica Neue", Arial, sans-serif;
-  --font-ui: "Google Sans", "Helvetica Neue", Arial, sans-serif;
+  --font-greek: Cardo, "Gentium Book Plus", "Times New Roman", serif;
+  --font-text: adobe-garamond-pro, "EB Garamond", "Crimson Text", Georgia, "Times New Roman", serif;
+  --font-ui: Roboto, "Helvetica Neue", Helvetica, sans-serif;
   color-scheme: light;
 }
 * { box-sizing: border-box; }
