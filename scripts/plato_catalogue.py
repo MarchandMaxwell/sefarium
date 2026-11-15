@@ -304,9 +304,13 @@ def story_box(slug: str) -> str:
 
 
 def _year(when: str) -> str:
-    """The date at the head of the setting line: "c. 432 BC", "399 BC"."""
-    m = re.match(r"((?:c\. )?\d+(?:–\d+)? BC)", when)
-    return m.group(1) if m else ""
+    """The date at the head of the setting line ("c. 432 BC", "Spring 399 BC"),
+    or its first short sentence ("Date uncertain", "No dramatic date")."""
+    m = re.match(r"((?:c\. |Spring |Summer |Autumn |Winter )?\d+(?:–\d+)? BC)", when)
+    if m:
+        return m.group(1)
+    first = when.split(". ")[0].rstrip(".")
+    return first if len(first) <= 32 else "No dramatic date"
 
 
 def _row(slug: str, when: str, summary: str, href: str, greeks: dict[str, str]) -> str:
@@ -317,7 +321,7 @@ def _row(slug: str, when: str, summary: str, href: str, greeks: dict[str, str]) 
         f'<span class="names"><span class="en">{esc(ENGLISH[slug])}</span>'
         f'<span class="gk" lang="grc">{esc(greek)}</span></span>'
         f'<span class="desc">{esc(short_line(slug))}</span>'
-        + (f'<span class="when">{esc(year)}</span>' if year else "")
+        + f'<span class="when">{esc(year)}</span>'
         + '</a>'
     )
 
@@ -330,26 +334,51 @@ def _by_slug() -> dict[str, tuple[str, str]]:
     return found
 
 
-# One-line description for the catalogue, in the manner of a library listing:
-# the question each dialogue asks, taken from its summary. Works whose summary
-# names no single question get a line of their own.
-SHORT = {
-    "apology": "Socrates’ defence before the Athenian jury, and his words after the verdict.",
-    "critias": "The tale of ancient Athens and Atlantis, broken off as Zeus begins to speak.",
-    "cleitophon": "A complaint that Socrates urges virtue but never says what it is.",
-    "letters": "Thirteen letters under Plato’s name, most of them about Syracuse.",
+# A short description for the catalogue and each dialogue's contents page:
+# what the dialogue is about, told through love. At most three lines in the
+# catalogue's two-column layout (kept under about 130 characters).
+DESCRIPTION = {
+    "parmenides": "The young Socrates offers his Forms to old Parmenides, who tests them hard. To love the truth is to let your dearest ideas be tried.",
+    "protagoras": "Socrates leaves the young Alcibiades to hear Protagoras ask if virtue can be taught, and finds wisdom the greater beauty.",
+    "alcibiades-1": "Socrates, the one lover who stayed, shows Alcibiades that to love a person is to love his soul, and to know yourself first.",
+    "charmides": "Dazzled by the beautiful young Charmides, Socrates asks him what self-control is: desire meeting the virtue that governs it.",
+    "gorgias": "Socrates loves philosophy, Callicles the Athenian people. They argue over which love makes a good life.",
+    "laches": "Two fathers who love their sons ask Athens’ generals how to make them brave. What is courage, and who can teach it?",
+    "lysis": "Socrates shows a lovesick young man how to talk to the boy he adores, then asks what makes one person another’s friend.",
+    "hippias-major": "Socrates presses a vain sophist to say what beauty itself is, the thing every lover is drawn to in beautiful things.",
+    "hippias-minor": "Hippias loves Homer’s honest Achilles over wily Odysseus. Socrates asks whether the one who does wrong knowingly is better.",
+    "phaedrus": "By a stream outside Athens, Socrates answers a clever speech against lovers by praising love as a divine madness.",
+    "symposium": "At a drinking party each guest praises Love. Diotima’s ladder climbs from one beautiful body to beauty itself.",
+    "ion": "A performer in love with Homer learns his gift is not a skill but inspiration, passed from the Muse like a magnet’s pull.",
+    "euthydemus": "Two clowning sophists court the young Clinias with word tricks, while Socrates shows him what loving wisdom asks.",
+    "republic": "Asked whether justice pays, Socrates builds a city in words and gives it to the philosopher, the lover of wisdom, to rule.",
+    "timaeus": "Timaeus tells how a good maker, without envy, wanted all things to be like himself and made the world as beautiful as he could.",
+    "critias": "The tale of ancient Athens and Atlantis, a people who fell when the love of gain overcame the divine in them.",
+    "theages": "A father brings his ambitious son to Socrates, who says the only thing he understands is love.",
+    "alcibiades-2": "On his way to pray, Alcibiades learns that asking the gods for what you love is dangerous if you do not know the good.",
+    "meno": "Spoiled by his admirers, the handsome Meno demands to know if virtue can be taught. A slave boy’s geometry answers.",
+    "menexenus": "Socrates recites a funeral speech he says Aspasia taught him, on the city’s love for its dead, half praise and half parody.",
+    "cratylus": "Are names right by nature or by agreement? Socrates plays at etymology, deriving Eros from love “flowing in” through the eyes.",
+    "theaetetus": "Socrates, a midwife’s son and a matchmaker of minds, helps young Theaetetus give birth to his ideas about knowledge.",
+    "euthyphro": "On his way to court, Socrates asks a confident priest what piety is: is the holy loved by the gods because it is holy?",
+    "sophist": "A visitor from Elea hunts the sophist, a paid hunter of rich young men, and finds how a false word can exist.",
+    "statesman": "The true ruler is a weaver who binds brave and gentle citizens together, through education and through marriage.",
+    "apology": "At his trial Socrates says he loves Athens, but obeys the god and philosophy more, and will not stop questioning to live.",
+    "crito": "At dawn in prison his old friend Crito begs him to escape. Socrates stays, loyal to the laws that raised him like parents.",
+    "phaedo": "On his last day Socrates tells his weeping friends why a lover of wisdom does not fear death, and why the soul outlives the body.",
+    "philebus": "Is the good life pleasure, wisdom, or a mixture of the two? Socrates weighs what a person should most desire.",
+    "hipparchus": "Socrates and a friend argue about the love of gain: is every lover of gain really a lover of the good?",
+    "lovers": "Two young men who love the same boy argue before Socrates about what it means to love wisdom.",
+    "cleitophon": "Cleitophon praises Socrates for making people love virtue, then complains that he never says what virtue is.",
+    "minos": "Socrates argues that law wants to discover what truly is, and defends Minos, the king whom Zeus himself taught.",
+    "laws": "Three old men walking to a shrine in Crete design a city whose laws teach citizens to love the good, not only victory.",
+    "epinomis": "A sequel to the Laws asks what wisdom the guardians need, and finds it in a loving study of the stars and the gods.",
+    "letters": "Thirteen letters under Plato’s name, many about Syracuse and his friendship with Dion, a love that drew him into politics.",
 }
 
 
 def short_line(slug: str) -> str:
-    if slug in SHORT:
-        return SHORT[slug]
-    summary = _by_slug()[slug][1]
-    m = re.search(r"The question (?:is|that remains is) ([^.]*\.)", summary)
-    if not m:
-        raise SystemExit(f"no one-line description for {slug}")
-    line = m.group(1)
-    return line[0].upper() + line[1:]
+    return DESCRIPTION[slug]
 
 
 def about_info(slug: str) -> dict[str, str]:

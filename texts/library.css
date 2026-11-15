@@ -186,3 +186,15 @@ a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 #ord-tet:checked ~ .viewtoggle label[for="ord-tet"] { border-bottom-color: #333; }
 .aside .small { font-size: 13px; line-height: 1.5; }
 @media (max-width: 700px) { .works { grid-template-columns: 1fr; } }
+
+/* each entry fills its grid cell, and the year sits on the bottom line,
+   so the years in a row line up */
+.works { align-items: stretch; }
+.work { display: flex; flex-direction: column; }
+.work .when { margin-top: auto; padding-top: 8px; }
+.work .desc { margin-bottom: 0; }
+/* mid-size screens: a narrower side column keeps the two lists wide enough
+   for three-line descriptions */
+@media (min-width: 981px) and (max-width: 1180px) {
+  .aside { width: 300px; flex-basis: 300px; padding: 28px 26px 56px; }
+}
