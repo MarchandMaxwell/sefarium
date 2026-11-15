@@ -8,6 +8,7 @@ the catalogue pages for the sources.
 from __future__ import annotations
 
 import html
+import re
 from pathlib import Path
 
 from plato_stories import STORY
@@ -302,16 +303,22 @@ def story_box(slug: str) -> str:
     )
 
 
+def _year(when: str) -> str:
+    """The date at the head of the setting line: "c. 432 BC", "399 BC"."""
+    m = re.match(r"((?:c\. )?\d+(?:–\d+)? BC)", when)
+    return m.group(1) if m else ""
+
+
 def _row(slug: str, when: str, summary: str, href: str, greeks: dict[str, str]) -> str:
     greek = greeks.get(slug, GREEK[slug])
+    year = _year(when)
     return (
         f'<a class="work" href="{esc(href)}">'
         f'<span class="names"><span class="en">{esc(ENGLISH[slug])}</span>'
         f'<span class="gk" lang="grc">{esc(greek)}</span></span>'
-        f'<span class="when">{esc(when)}</span>'
-        f'<span class="desc">{esc(STORY[slug])}</span>'
-        f'<span class="love-line"><span class="lbl">Love:</span> {esc(LOVE[slug])}</span>'
-        f'</a>'
+        f'<span class="desc">{esc(short_line(slug))}</span>'
+        + (f'<span class="when">{esc(year)}</span>' if year else "")
+        + '</a>'
     )
 
 
@@ -323,6 +330,34 @@ def _by_slug() -> dict[str, tuple[str, str]]:
     return found
 
 
+# One-line description for the catalogue, in the manner of a library listing:
+# the question each dialogue asks, taken from its summary. Works whose summary
+# names no single question get a line of their own.
+SHORT = {
+    "apology": "Socrates’ defence before the Athenian jury, and his words after the verdict.",
+    "critias": "The tale of ancient Athens and Atlantis, broken off as Zeus begins to speak.",
+    "cleitophon": "A complaint that Socrates urges virtue but never says what it is.",
+    "letters": "Thirteen letters under Plato’s name, most of them about Syracuse.",
+}
+
+
+def short_line(slug: str) -> str:
+    if slug in SHORT:
+        return SHORT[slug]
+    summary = _by_slug()[slug][1]
+    m = re.search(r"The question (?:is|that remains is) ([^.]*\.)", summary)
+    if not m:
+        raise SystemExit(f"no one-line description for {slug}")
+    line = m.group(1)
+    return line[0].upper() + line[1:]
+
+
+def about_info(slug: str) -> dict[str, str]:
+    """What the dialogue page shows under About This Text."""
+    when, _summary = _by_slug()[slug]
+    return {"when": when, "story": STORY[slug], "love": LOVE[slug], "short": short_line(slug)}
+
+
 def life_html(href_for, greeks: dict[str, str]) -> str:
     parts = []
     for title, blurb, items in PHASES:
@@ -332,7 +367,7 @@ def life_html(href_for, greeks: dict[str, str]) -> str:
         )
         parts.append(
             f'<section class="group"><h2>{esc(title)} '
-            f'<span class="catdesc">{esc(blurb)}</span></h2>'
+            f'<span class="catdesc">({esc(blurb)})</span></h2>'
             f'<div class="works">{rows}</div></section>'
         )
     return "".join(parts)
@@ -439,20 +474,24 @@ def catalog_document(where: str, greeks: dict[str, str] | None = None) -> str:
         <label for="ord-tet">Tetralogies</label>
       </div>
       <div class="order tet">
-        <p class="chrono-note">Thrasyllus’ nine groups of four, the order transmitted with the corpus. The date and setting of each conversation are still shown on the row.</p>
         {tets}
       </div>
       <div class="order life">
-        <p class="chrono-note">{esc(NOTE)}</p>
         {life}
       </div>
     </div>
   </main>
   <aside class="aside" aria-label="About">
     <section>
+      <h2>About Plato</h2>
+      <p>Plato (c. 428–348 BC) wrote dialogues in which Socrates, his teacher, questions the people of Athens about virtue, knowledge, love and the city. Thirty-six works come down under his name, some of them doubted since antiquity.</p>
+      <p class="more"><a href="{home_reader}">Alcibiades I, with translation and commentary</a></p>
+    </section>
+    <section>
       <h2>About the order</h2>
-      <p>This is not the order of writing. It is the order of the conversations in Socrates’ life, as far as the texts and the usual reconstructions allow. Years still in dispute are named on the row.</p>
-      <p class="more"><a href="{home_reader}">Alcibiades I, with translation</a></p>
+      <p>“Socrates’ life” follows the order of the conversations in his life, not the order of writing. The year on each row is the dramatic date; each dialogue’s page gives the setting and the story.</p>
+      <p>“Tetralogies” is Thrasyllus’ nine groups of four, the order transmitted with the corpus.</p>
+      <p class="small">{esc(NOTE)}</p>
     </section>
     <section>
       <h2>Credits</h2>

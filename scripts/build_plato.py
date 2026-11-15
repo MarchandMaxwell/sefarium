@@ -22,7 +22,7 @@ import urllib.request
 from pathlib import Path
 from xml.etree import ElementTree as ET
 
-from plato_catalogue import love_box, story_box, write_catalog_pages
+from plato_catalogue import about_info, write_catalog_pages
 
 SOURCE_COMMIT = "dacb04909e43dc47738828d33cc3d2b0635bc54c"
 SOURCE_REPO = "PerseusDL/canonical-greekLit"
@@ -193,6 +193,7 @@ class Renderer:
         self.ids: set[str] = set()
         self.sections: list[str] = []
         self.pages: list[str] = []
+        self.page_ids: list[tuple[str, str]] = []
         self.toc: list[tuple[str, str, str]] = []
         self.speakers: list[str] = []
         self.unknown: set[str] = set()
@@ -259,6 +260,7 @@ class Renderer:
     def page(self, n: str) -> None:
         self.pages.append(n)
         ident = self.unique("p" + n)
+        self.page_ids.append((n, ident))
         if self.has_words():
             self.buf.append(
                 f'<span class="pmark" id="{ident}" title="Stephanus page {esc(n)}">{esc(n)}</span> '
@@ -532,7 +534,7 @@ def render_work(xml_path: Path) -> tuple[Renderer, int]:
     return renderer, greek_chars("".join(body.itertext()))
 
 
-def page_shell(title: str, body: str, current: str) -> str:
+def page_shell(title: str, body: str, current: str, extra: str = "") -> str:
     nav = [
         ("../index.html", "texts", "Texts"),
         ("../texts/plato.html", "plato", "Plato"),
@@ -558,8 +560,9 @@ def page_shell(title: str, body: str, current: str) -> str:
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Gentium+Book+Plus:ital,wght@0,400;0,700;1,400&amp;family=EB+Garamond:ital,wght@0,400;0,500;1,400&amp;family=Source+Sans+3:wght@400;600&amp;display=swap" rel="stylesheet">
 <link rel="stylesheet" href="plato.css">
+<script>document.documentElement.classList.add("js");</script>
 </head>
-<body>
+<body{extra}>
 <a class="skip" href="#text">Skip to text</a>
 <nav class="sitebar" aria-label="Site">
   <a class="brand" href="../index.html"><span class="mark" aria-hidden="true">Ψ</span>Sefarium</a>
@@ -607,14 +610,21 @@ def restore_missing(slug: str, page: str) -> str:
 
 
 def work_page(meta: dict, renderer: Renderer, prev_m: dict | None, next_m: dict | None) -> str:
+    """A dialogue page in two views, as on Sefaria: contents, then the reader."""
     greek = meta["greek"]
     english = meta["english"]
+    slug = meta["slug"]
+    info = about_info(slug)
     first = renderer.sections[0] if renderer.sections else ""
     last = renderer.sections[-1] if renderer.sections else ""
     span = f"{first}–{last}" if first else ""
+    start = f"#s{first}" if first else "#text"
     persons = ""
     if len(renderer.speakers) >= 2:
-        persons = f'<p class="persons">{" · ".join(esc(name) for name in renderer.speakers)}</p>'
+        persons = (
+            '<h3>Persons of the dialogue</h3>'
+            f'<p class="gk" lang="grc">{" · ".join(esc(name) for name in renderer.speakers)}</p>'
+        )
     note = ""
     if meta["num"] == "016":
         note = (
@@ -623,71 +633,81 @@ def work_page(meta: dict, renderer: Renderer, prev_m: dict | None, next_m: dict 
         )
     elif meta["num"] == "013":
         note = (
-            '<p class="note">An annotated edition of Alcibiades I, with a new English translation, '
-            'is the <a href="alcibiades-1-annotated.html">Sefarium reading of this dialogue</a>.</p>'
+            '<p class="note">Also read in Sefarium with a new English translation and commentary: '
+            '<a href="alcibiades-1-annotated.html">Alcibiades I, annotated</a>.</p>'
         )
-    toc = ""
+    divisions = ""
     if renderer.toc:
-        links = "".join(
-            f'<li><a href="#{esc(ident)}">{esc(label)}</a></li>'
+        kind = "Book" if renderer.toc[0][0].startswith("book") else (
+            "Letter" if renderer.toc[0][0].startswith("letter") else "Part")
+        def short(label: str) -> str:
+            m = re.search(r"(\d+)\s*$", label)
+            return m.group(1) if m else label
+        cells = "".join(
+            f'<a class="cell" href="#{esc(ident)}" title="{esc(label)}">{esc(short(label))}</a>'
             for ident, _href, label in renderer.toc
         )
-        toc = f'<ol class="books">{links}</ol>'
-    tools = f"""<div class="tools">
-  {toc}
-  <form class="jump" action="#text" onsubmit="return goSteph(this)">
-    <label for="steph">Stephanus</label>
-    <input id="steph" name="s" placeholder="{esc(first or "17a")}" autocomplete="off" enterkeyhint="go">
-    <button type="submit">Go</button>
-  </form>
-</div>
-<script>
-function goSteph(form) {{
-  var v = (form.s.value || "").trim().toLowerCase().replace(/^s/, "");
-  form.s.setCustomValidity("");
-  if (!v) return false;
-  var el = document.getElementById("s" + v) || document.getElementById("p" + v);
-  if (!el) {{
-    form.s.setCustomValidity("No section " + v + " in this work");
-    form.s.reportValidity();
-    return false;
-  }}
-  if (el.scrollIntoView) el.scrollIntoView({{block: "start"}});
-  location.hash = el.id;
-  return false;
-}}
-</script>"""
-    pager = ['<nav class="pager" aria-label="Works">']
+        divisions = f'<h3 class="gridlabel">{kind}</h3><div class="grid">{cells}</div>'
+    pages = "".join(
+        f'<a class="cell" href="#{esc(ident)}">{esc(n)}</a>' for n, ident in renderer.page_ids
+    )
+    contents = f"""{divisions}<h3 class="gridlabel">Stephanus page</h3><div class="grid">{pages}</div>"""
+    neighbours = []
     if prev_m:
-        pager.append(
-            f'<a class="prev" href="{prev_m["slug"]}.html" rel="prev">'
-            f'<span class="dir">Previous</span>{esc(prev_m["greek"])}</a>'
-        )
+        neighbours.append(f'<a href="{prev_m["slug"]}.html" rel="prev"><span class="dir">Previous</span>{esc(prev_m["english"])} <span class="gk" lang="grc">{esc(prev_m["greek"])}</span></a>')
     if next_m:
-        pager.append(
-            f'<a class="next" href="{next_m["slug"]}.html" rel="next">'
-            f'<span class="dir">Next</span>{esc(next_m["greek"])}</a>'
-        )
-    pager.append("</nav>")
+        neighbours.append(f'<a href="{next_m["slug"]}.html" rel="next"><span class="dir">Next</span>{esc(next_m["english"])} <span class="gk" lang="grc">{esc(next_m["greek"])}</span></a>')
+    pager = f'<nav class="pager" aria-label="Works">{"".join(neighbours)}</nav>'
     urn = meta["urn"]
-    body = f"""<main class="wrap" id="text">
-  <p class="kicker">Plato · Tetralogy {esc(meta["tetralogy"])}</p>
-  <h1 class="gk" lang="grc">{esc(greek)}</h1>
-  <p class="subtitle">{esc(english)}</p>
-  <p class="range">{esc(span)} · Stephanus</p>
-  <p class="edition">{esc(meta["edition"])}</p>
-  {persons}
-  {note}
-  {tools}
-  {story_box(meta["slug"])}
-  {love_box(meta["slug"])}
-  <article class="reading" lang="grc">
-    {''.join(renderer.blocks)}
-  </article>
-  {''.join(pager)}
-  {credits_block(urn, meta["filename"], meta["edition"])}
-</main>"""
-    return page_shell(f"{greek} · {english} · Sefarium", body, "plato")
+    body = f"""<div class="toc-view" id="contents">
+  <main class="toc-main">
+    <h1 class="toc-title">{esc(english)} <span class="gk" lang="grc">{esc(greek)}</span></h1>
+    <p class="toc-cat"><a href="../texts/plato.html">Plato</a> · Tetralogy {esc(meta["tetralogy"])} · {esc(span)}</p>
+    <p class="toc-short">{esc(info["short"])}</p>
+    <a class="btn" href="{start}">Start Reading</a>
+    {note}
+    <div class="tabs" role="presentation"><span class="tab on">Contents</span></div>
+    {contents}
+  </main>
+  <aside class="toc-about" aria-label="About this text">
+    <h2>About This Text</h2>
+    <p class="kv"><b>Dramatic date</b> {esc(info["when"])}</p>
+    <p>{esc(info["story"])}</p>
+    <h3>Love in this dialogue</h3>
+    <p>{esc(info["love"])}</p>
+    {persons}
+    <h3>Greek text</h3>
+    <p>{esc(meta["edition"])}. Digital text from the <a href="https://www.perseus.tufts.edu/">Perseus Digital Library</a>, Tufts University.</p>
+    {pager}
+  </aside>
+</div>
+<div class="reader-view" id="text">
+  <div class="rbar">
+    <a class="rb-back" href="#contents" aria-label="Contents of {esc(english)}" title="Contents">☰</a>
+    <a class="rb-title" href="#contents" title="Contents"><span class="t">{esc(english)}</span> <span class="ref" id="rb-ref">{esc(first)}</span><small>Burnet, Oxford · Greek</small></a>
+    <button class="rb-a" id="rb-a" aria-haspopup="true" aria-expanded="false" aria-controls="rmenu" title="Text display options">A</button>
+    <div class="rmenu" id="rmenu" hidden role="dialog" aria-label="Text display options">
+      <div class="row"><span>Font size</span><span class="size"><button id="fminus" aria-label="Smaller text">−</button><button id="fplus" aria-label="Larger text">+</button></span></div>
+      <div class="row"><span>Accents &amp; breathings</span><button class="switch" role="switch" id="sw-acc" aria-checked="true" aria-label="Accents and breathings"></button></div>
+    </div>
+  </div>
+  <div class="rwork">
+    <div class="rcol">
+      <article class="reading" lang="grc">
+        {''.join(renderer.blocks)}
+      </article>
+      {pager}
+      {credits_block(urn, meta["filename"], meta["edition"])}
+    </div>
+    <aside class="rpanel" id="rpanel" hidden aria-label="Resources">
+      <header><span>Resources</span><button id="rp-close" aria-label="Close resources">✕</button></header>
+      <div id="rp-body"></div>
+    </aside>
+  </div>
+</div>
+<script src="reader.js"></script>"""
+    return page_shell(f"{greek} · {english} · Sefarium", body, "plato",
+                      extra=f' data-title="{esc(english)}" data-urn="{esc(urn)}" class="work-page v-contents"')
 
 
 def check(works: list[dict], out: Path) -> None:

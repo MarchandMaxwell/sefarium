@@ -165,3 +165,24 @@ a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
   .work .en { font-size: 20px; }
   .cat-title { font-size: 26px; }
 }
+
+
+/* Category pages and tiles in Sefaria's manner: serif titles, two columns
+   of works, each with a one-line description. */
+.tile .name, .work .en { font-family: var(--font-text); font-weight: 400; }
+.tile .name { font-size: 26px; }
+.works { grid-template-columns: 1fr 1fr; column-gap: 36px; }
+.work { padding: 14px 0 16px; border-top: 1px solid #ededec; }
+.work .names { display: block; margin: 0 0 4px; }
+.work .en { font-size: 21px; }
+.work .gk { display: block; text-align: start; font-size: 15px; color: #666; margin-top: 1px; }
+.work .desc { font-family: var(--font-ui); font-size: 14px; line-height: 18px; color: #666; margin: 6px 0 0; }
+.work .when { font-family: var(--font-ui); font-size: 12px; color: #999; margin: 6px 0 0; letter-spacing: .02em; }
+.group h2 { font-family: var(--font-text); font-size: 17px; font-weight: 400; text-transform: uppercase; letter-spacing: .04em; color: #666; margin: 0 0 6px; }
+.group h2 .catdesc { text-transform: none; letter-spacing: 0; }
+.viewtoggle { gap: 24px; border-bottom: 1px solid #ccc; margin: 0 0 30px; }
+.viewtoggle label { font-size: 16px; color: #999; padding-bottom: 8px; margin-bottom: -1px; }
+#ord-life:checked ~ .viewtoggle label[for="ord-life"],
+#ord-tet:checked ~ .viewtoggle label[for="ord-tet"] { border-bottom-color: #333; }
+.aside .small { font-size: 13px; line-height: 1.5; }
+@media (max-width: 700px) { .works { grid-template-columns: 1fr; } }
